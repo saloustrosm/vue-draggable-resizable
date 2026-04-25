@@ -10,7 +10,7 @@
     }, className]"
     @mousedown="elementMouseDown"
     @touchstart="elementTouchDown"
-    @contextmenu.prevent.stop="contextMenu"
+    @contextmenu="contextMenu"
   >
     <div
       v-for="handle in actualHandles"
@@ -799,25 +799,23 @@ export default {
       this.handleUp(e)
     },
     handleUp (e) {
-      const wasResizing = this.resizing
-      const wasDragging = this.dragging
+      const wasDragging = this.dragging || this.dragEnable
+      const wasResizing = this.resizing || this.resizeEnable
 
       this.handle = null
 
       this.resetBoundsAndMouseState()
 
-      this.dragging = false
-      this.resizing = false
       this.dragEnable = false
       this.resizeEnable = false
+      this.dragging = false
+      this.resizing = false
 
-      if (this.resizing) {
-        this.resizing = false
+      if (wasResizing) {
         this.$emit('resizeStop', this.left, this.top, this.width, this.height)
       }
 
-      if (this.dragging) {
-        this.dragging = false
+      if (wasDragging) {
         this.$emit('dragStop', this.left, this.top)
       }
 

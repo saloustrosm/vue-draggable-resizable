@@ -1,5 +1,5 @@
-import { openBlock as v, createElementBlock as M, normalizeStyle as H, normalizeClass as T, withModifiers as z, Fragment as W, renderList as L, renderSlot as B } from "vue";
-function D(t) {
+import { openBlock as y, createElementBlock as v, normalizeStyle as H, normalizeClass as D, Fragment as W, renderList as L, withModifiers as M, renderSlot as T } from "vue";
+function B(t) {
   return typeof t == "function" || Object.prototype.toString.call(t) === "[object Function]";
 }
 function x(t, e, i, s = 1) {
@@ -9,7 +9,7 @@ function x(t, e, i, s = 1) {
 function R(t, e, i) {
   return t - e - i;
 }
-function S(t, e, i) {
+function E(t, e, i) {
   return t - e - i;
 }
 function f(t, e, i) {
@@ -23,8 +23,8 @@ function k(t, e, i) {
     "mozMatchesSelector",
     "msMatchesSelector",
     "oMatchesSelector"
-  ].find((o) => D(s[o]));
-  if (!D(s[h]))
+  ].find((o) => B(s[o]));
+  if (!B(s[h]))
     return !1;
   do {
     if (s[h](e))
@@ -404,7 +404,7 @@ const Y = {
         this.bounds.minLeft,
         this.bounds.maxLeft
       ), this.lockAspectRatio && this.resizingOnX && (i = this.top - (this.left - e) / a));
-      const d = R(this.parentWidth, e, s), c = S(this.parentHeight, i, h);
+      const d = R(this.parentWidth, e, s), c = E(this.parentHeight, i, h);
       this.onResize(this.handle, e, i, d, c) !== !1 && (this.left = e, this.top = i, this.right = s, this.bottom = h, this.width = d, this.height = c, this.$emit("resizing", this.left, this.top, this.width, this.height), this.resizing = !0);
     },
     changeWidth(t) {
@@ -415,7 +415,7 @@ const Y = {
       );
       let h = this.bottom;
       this.lockAspectRatio && (h = this.bottom - (this.right - s) / this.aspectFactor);
-      const o = R(this.parentWidth, this.left, s), a = S(this.parentHeight, this.top, h);
+      const o = R(this.parentWidth, this.left, s), a = E(this.parentHeight, this.top, h);
       this.right = s, this.bottom = h, this.width = o, this.height = a;
     },
     changeHeight(t) {
@@ -426,14 +426,15 @@ const Y = {
       );
       let h = this.right;
       this.lockAspectRatio && (h = this.right - (this.bottom - s) * this.aspectFactor);
-      const o = R(this.parentWidth, this.left, h), a = S(this.parentHeight, this.top, s);
+      const o = R(this.parentWidth, this.left, h), a = E(this.parentHeight, this.top, s);
       this.right = h, this.bottom = s, this.width = o, this.height = a;
     },
     contextMenu(t) {
       !this.dragEnable && !this.resizeEnable && !this.dragging && !this.resizing || (t.preventDefault && t.preventDefault(), t.stopPropagation && t.stopPropagation(), this.handleUp(t));
     },
     handleUp(t) {
-      this.resizing, this.dragging, this.handle = null, this.resetBoundsAndMouseState(), this.dragging = !1, this.resizing = !1, this.dragEnable = !1, this.resizeEnable = !1, this.resizing && (this.resizing = !1, this.$emit("resizeStop", this.left, this.top, this.width, this.height)), this.dragging && (this.dragging = !1, this.$emit("dragStop", this.left, this.top)), r(document.documentElement, g.move, this.move), r(document.documentElement, g.move, this.handleResize), r(document.documentElement, g.stop, this.handleUp), r(document.documentElement, "contextmenu", this.contextMenu);
+      const e = this.dragging || this.dragEnable, i = this.resizing || this.resizeEnable;
+      this.handle = null, this.resetBoundsAndMouseState(), this.dragEnable = !1, this.resizeEnable = !1, this.dragging = !1, this.resizing = !1, i && this.$emit("resizeStop", this.left, this.top, this.width, this.height), e && this.$emit("dragStop", this.left, this.top), r(document.documentElement, g.move, this.move), r(document.documentElement, g.move, this.handleResize), r(document.documentElement, g.stop, this.handleUp), r(document.documentElement, "contextmenu", this.contextMenu);
     }
   },
   computed: {
@@ -502,9 +503,9 @@ const Y = {
   }
 }, A = ["onMousedown", "onTouchstart"];
 function F(t, e, i, s, h, o) {
-  return v(), M("div", {
+  return y(), v("div", {
     style: H(o.style),
-    class: T([{
+    class: D([{
       [i.classNameActive]: t.enabled,
       [i.classNameDragging]: t.dragging,
       [i.classNameResizing]: t.resizing,
@@ -513,32 +514,32 @@ function F(t, e, i, s, h, o) {
     }, i.className]),
     onMousedown: e[1] || (e[1] = (...a) => o.elementMouseDown && o.elementMouseDown(...a)),
     onTouchstart: e[2] || (e[2] = (...a) => o.elementTouchDown && o.elementTouchDown(...a)),
-    onContextmenu: e[3] || (e[3] = z((...a) => o.contextMenu && o.contextMenu(...a), ["prevent", "stop"]))
+    onContextmenu: e[3] || (e[3] = (...a) => o.contextMenu && o.contextMenu(...a))
   }, [
-    (v(!0), M(W, null, L(o.actualHandles, (a) => (v(), M("div", {
+    (y(!0), v(W, null, L(o.actualHandles, (a) => (y(), v("div", {
       key: a,
-      class: T([i.classNameHandle, i.classNameHandle + "-" + a]),
+      class: D([i.classNameHandle, i.classNameHandle + "-" + a]),
       style: H({ display: t.enabled ? "block" : "none" }),
-      onMousedown: z((l) => o.handleDown(a, l), ["stop", "prevent"]),
-      onTouchstart: z((l) => o.handleTouchDown(a, l), ["stop", "prevent"]),
-      onContextmenu: e[0] || (e[0] = z((...l) => o.contextMenu && o.contextMenu(...l), ["stop", "prevent"]))
+      onMousedown: M((l) => o.handleDown(a, l), ["stop", "prevent"]),
+      onTouchstart: M((l) => o.handleTouchDown(a, l), ["stop", "prevent"]),
+      onContextmenu: e[0] || (e[0] = M((...l) => o.contextMenu && o.contextMenu(...l), ["stop", "prevent"]))
     }, [
-      B(t.$slots, a)
+      T(t.$slots, a)
     ], 46, A))), 128)),
-    B(t.$slots, "default")
+    T(t.$slots, "default")
   ], 38);
 }
 const U = /* @__PURE__ */ N(Y, [["render", F]]);
-function E(t) {
-  E.installed || (E.installed = !0, t.component("VueDraggableResizable", U));
+function S(t) {
+  S.installed || (S.installed = !0, t.component("VueDraggableResizable", U));
 }
 const V = {
-  install: E
+  install: S
 };
-let y = null;
-typeof window < "u" ? y = window.Vue : typeof global < "u" && (y = global.Vue);
-y && y.use(V);
+let z = null;
+typeof window < "u" ? z = window.Vue : typeof global < "u" && (z = global.Vue);
+z && z.use(V);
 export {
   U as default,
-  E as install
+  S as install
 };

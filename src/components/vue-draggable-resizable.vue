@@ -10,6 +10,7 @@
     }, className]"
     @mousedown="elementMouseDown"
     @touchstart="elementTouchDown"
+    @contextmenu.prevent.stop="contextMenu"
   >
     <div
       v-for="handle in actualHandles"
@@ -18,6 +19,7 @@
       :style="{display: enabled ? 'block' : 'none'}"
       @mousedown.stop.prevent="handleDown(handle, $event)"
       @touchstart.stop.prevent="handleTouchDown(handle, $event)"
+      @contextmenu.stop.prevent="contextMenu"
     >
       <slot :name="handle"></slot>
     </div>
@@ -302,7 +304,12 @@ export default {
     removeEvent(document.documentElement, 'touchstart', this.handleUp)
     removeEvent(document.documentElement, 'mousemove', this.move)
     removeEvent(document.documentElement, 'touchmove', this.move)
+    removeEvent(document.documentElement, 'mousemove', this.handleResize)
+    removeEvent(document.documentElement, 'touchmove', this.handleResize)
     removeEvent(document.documentElement, 'mouseup', this.handleUp)
+    removeEvent(document.documentElement, 'touchend', this.handleUp)
+    removeEvent(document.documentElement, 'touchcancel', this.handleUp)
+    removeEvent(document.documentElement, 'contextmenu', this.contextMenu)
     removeEvent(document.documentElement, 'touchend touchcancel', this.deselect)
 
     removeEvent(window, 'resize', this.checkParentSize)
@@ -401,6 +408,10 @@ export default {
 
         addEvent(document.documentElement, eventsFor.move, this.move)
         addEvent(document.documentElement, eventsFor.stop, this.handleUp)
+
+        if (eventsFor === events.mouse) {
+          addEvent(document.documentElement, 'contextmenu', this.contextMenu)
+        }
       }
     },
     calcDragLimits () {
@@ -438,7 +449,7 @@ export default {
       this.handleDown(handle, e)
     },
     handleDown (handle, e) {
-      if (e instanceof MouseEvent && e.which !== 1) {
+      if (e instanceof MouseEvent && e.button !== 0) {
         return
       }
 
@@ -469,6 +480,10 @@ export default {
 
       addEvent(document.documentElement, eventsFor.move, this.handleResize)
       addEvent(document.documentElement, eventsFor.stop, this.handleUp)
+
+      if (eventsFor === events.mouse) {
+        addEvent(document.documentElement, 'contextmenu', this.contextMenu)
+      }
     },
     calcResizeLimits () {
       let minW = this.minW
@@ -573,6 +588,12 @@ export default {
       return limits
     },
     move (e) {
+      if (e instanceof MouseEvent && e.buttons !== undefined && e.buttons !== 1) {
+        this.handleUp(e)
+
+        return
+      }
+
       if (this.resizing) {
         this.handleResize(e)
       } else if (this.dragEnable) {
@@ -580,6 +601,12 @@ export default {
       }
     },
     handleDrag (e) {
+      if (e instanceof MouseEvent && e.buttons !== undefined && e.buttons !== 1) {
+        this.handleUp(e)
+
+        return
+      }
+
       const axis = this.axis
       const grid = this.grid
       const bounds = this.bounds
@@ -627,6 +654,12 @@ export default {
       this.bottom = this.parentHeight - this.height - top
     },
     handleResize (e) {
+      if (e instanceof MouseEvent && e.buttons !== undefined && e.buttons !== 1) {
+        this.handleUp(e)
+
+        return
+      }
+
       let left = this.left
       let top = this.top
       let right = this.right
@@ -755,11 +788,26 @@ export default {
       this.width = width
       this.height = height
     },
+    contextMenu (e) {
+      if (!this.dragEnable && !this.resizeEnable && !this.dragging && !this.resizing) {
+        return
+      }
+
+      if (e.preventDefault) e.preventDefault()
+      if (e.stopPropagation) e.stopPropagation()
+
+      this.handleUp(e)
+    },
     handleUp (e) {
+      const wasResizing = this.resizing
+      const wasDragging = this.dragging
+
       this.handle = null
 
       this.resetBoundsAndMouseState()
 
+      this.dragging = false
+      this.resizing = false
       this.dragEnable = false
       this.resizeEnable = false
 
@@ -773,7 +821,10 @@ export default {
         this.$emit('dragStop', this.left, this.top)
       }
 
+      removeEvent(document.documentElement, eventsFor.move, this.move)
       removeEvent(document.documentElement, eventsFor.move, this.handleResize)
+      removeEvent(document.documentElement, eventsFor.stop, this.handleUp)
+      removeEvent(document.documentElement, 'contextmenu', this.contextMenu)
     }
   },
   computed: {
